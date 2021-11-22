@@ -21,8 +21,9 @@ from zorg.buildbot.builders import XToolchainBuilder
 
 # Release builders.
 
-all = [
+all = []
 
+'''
 # Clang builders.
 
     {'name' : "llvm-clang-x86_64-win-release",
@@ -225,3 +226,4 @@ all = [
                     })},
 
 ]
+'''
