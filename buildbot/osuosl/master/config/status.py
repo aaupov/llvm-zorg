@@ -7,7 +7,8 @@ from zorg.buildbot.util.InformativeMailNotifier import LLVMInformativeMailNotifi
 # Should be a single e-mail address
 status_email = str(config.options.get('Master Options', 'status_email')).split(',')
 
-all = [
+all = []
+'''
 
     # Report github status for all the release builders,
     # i.e. those with the "release" tag.
@@ -303,6 +304,7 @@ all = [
                 "polly-sphinx-docs",
             ]),
 ]
+'''
 
 
 from twisted.python import log
