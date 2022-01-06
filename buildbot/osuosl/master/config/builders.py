@@ -2256,8 +2256,9 @@ all += [
              "-DLLVM_TARGETS_TO_BUILD=X86",
              "-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=ARC",
          ])},
+]
 
-
+all = [
     # BOLT builders managed by Meta
     {'name': "bolt-x86_64-ubuntu",
     'tags': ["bolt"],

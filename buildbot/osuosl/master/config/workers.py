@@ -8,6 +8,7 @@ def create_worker(name, *args, **kwargs):
     password = config.options.get('Worker Passwords', name)
     return worker.Worker(name, password=password, *args, **kwargs)
 
+'''
 def get_all():
     return [
         # FreeBSD
@@ -266,7 +267,9 @@ def get_all():
         # OpenMP on AMDGPU, Ubuntu 18.04.5, Intel(R) Xeon(R) Gold 5218 @ 2.30GHz with 64GB Memory, 1 Vega20 GPU with 16GB Memory
         create_worker("omp-vega20-0", properties={'jobs': 32}, max_builds=1),
         create_worker("omp-vega20-1", properties={'jobs': 32}, max_builds=1),
-
+'''
+def get_all():
+    return [
         # BOLT worker
-        create_worker("bolt-worker", properties={'jobs' : 16}, max_builds=1),
+        create_worker("bolt-worker", properties={'jobs' : 16, 'loadaverage': 16}, max_builds=1),
         ]
