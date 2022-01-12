@@ -1,5 +1,8 @@
 *~
 *.pyc
+*.swp
+*.orig
+twistd.log*
 lnt/tests/*/Output
 lnt/tests/*/*/Output
 lnt/docs/_build
