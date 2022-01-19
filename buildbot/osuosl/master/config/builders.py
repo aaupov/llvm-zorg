@@ -2268,8 +2268,13 @@ all = [
     'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
                     bolttests=True,
                     extra_configure_args=[
+                        "-DBOLT_CLANG_EXE=/usr/bin/clang-12",
+                        "-DBOLT_LLD_EXE=/usr/bin/lld-12",
+                        "-DCMAKE_C_COMPILER=clang-12",
+                        "-DCMAKE_CXX_COMPILER=clang++-12",
                         "-DLLVM_CCACHE_BUILD=ON",
-                        "-DLLVM_ENABLE_PROJECTS=clang;lld;bolt",
+                        "-DLLVM_ENABLE_LLD=ON",
+                        "-DLLVM_ENABLE_PROJECTS=bolt",
                         "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
                         ],
                     )},
