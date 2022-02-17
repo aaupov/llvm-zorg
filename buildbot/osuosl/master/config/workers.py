@@ -272,4 +272,5 @@ def get_all():
     return [
         # BOLT worker
         create_worker("bolt-worker", properties={'jobs' : 16, 'loadaverage': 16}, max_builds=1),
+        create_worker("win-worker", properties={'jobs' : 4, 'loadaverage': 4}, max_builds=1),
         ]
