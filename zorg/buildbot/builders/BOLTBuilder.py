@@ -4,6 +4,7 @@ from zorg.buildbot.builders.UnifiedTreeBuilder import getLLVMBuildFactoryAndSour
 from zorg.buildbot.process.factory import LLVMBuildFactory
 
 def getBOLTCmakeBuildFactory(
+           checks = None,
            clean = False,
            bolttests = False,
            extra_configure_args = None,
@@ -13,23 +14,25 @@ def getBOLTCmakeBuildFactory(
     if env is None:
         env = dict()
 
-    bolttests_dir = "bolt-tests"
+    if checks is None:
+        checks = list()
+
+    bolttests_dir = "../bolt-tests"
 
     cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
     cleanBuildRequestedByProperty = lambda step: step.build.getProperty("clean")
 
-    checks = ['check-bolt']
-    extra_steps = []
-
     f = getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=['bolt', 'llvm'],
+            cleanBuildRequested=cleanBuildRequested,
+            llvm_srcdir="../llvm-project",
             **kwargs) # Pass through all the extra arguments.
 
     if bolttests:
         checks += ['check-large-bolt']
         extra_configure_args += [
             '-DLLVM_EXTERNAL_PROJECTS=bolttests',
-            '-DLLVM_EXTERNAL_BOLTTESTS_SOURCE_DIR=' + LLVMBuildFactory.pathRelativeTo(bolttests_dir, f.monorepo_dir),
+            '-DLLVM_EXTERNAL_BOLTTESTS_SOURCE_DIR='+LLVMBuildFactory.pathRelativeTo(bolttests_dir, f.monorepo_dir),
             ]
         # Clean checkout of bolt-tests if cleanBuildRequested
         f.addSteps([

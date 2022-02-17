@@ -2258,43 +2258,103 @@ all += [
          ])},
 ]
 
+def bolt_builder(cc, cxx, extra=None, extraname=None, bolttests=False,
+        checks=['check-bolt'], clang_lld=True):
+    # defaults
+    clang = "/usr/bin/clang-12"
+    lld = "/usr/bin/ld.lld-12"
+    if 'clang' in cc:
+        clang = f"/usr/bin/{cc}"
+        lld = "/usr/bin/ld.lld-"+cc.split('-')[1]
+
+    extraname = f"-{extraname}" if extraname else ""
+
+    return {'name': f"bolt-x86_64-ubuntu-{cc}{extraname}",
+    'tags': ["bolt"],
+    'collapseRequests': True,
+    'workernames':["bolt-worker"],
+    'builddir': f"bolt-x86_64-ubuntu-bolttests-{cc}{extraname}",
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    checks=checks,
+                    bolttests=bolttests,
+                    extra_configure_args=[
+                        f"-DCMAKE_C_COMPILER={cc}",
+                        f"-DCMAKE_CXX_COMPILER={cxx}",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_ENABLE_PROJECTS=bolt",
+                        "-DLLVM_TARGETS_TO_BUILD=X86",
+                        ] + ([
+                        f"-DBOLT_CLANG_EXE={clang}",
+                        f"-DBOLT_LLD_EXE={lld}",
+                        ] if clang_lld else []) + (extra if extra else []),
+                    )}
 all = [
-    # BOLT builders managed by Meta
-    {'name': "bolt-x86_64-ubuntu",
-    'tags': ["bolt"],
-    'collapseRequests': False,
-    'workernames':["bolt-worker"],
-    'builddir': "bolt-x86_64-ubuntu-bolttests",
-    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
-                    bolttests=True,
-                    extra_configure_args=[
-                        "-DBOLT_CLANG_EXE=/usr/bin/clang-12",
-                        "-DBOLT_LLD_EXE=/usr/bin/lld-12",
-                        "-DCMAKE_C_COMPILER=clang-12",
-                        "-DCMAKE_CXX_COMPILER=clang++-12",
-                        "-DLLVM_CCACHE_BUILD=ON",
-                        "-DLLVM_ENABLE_LLD=ON",
-                        "-DLLVM_ENABLE_PROJECTS=bolt",
-                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
-                        ],
-                    )},
-
-    {'name': "bolt-x86_64-ubuntu-shared",
-    'tags': ["bolt"],
-    'collapseRequests': False,
-    'workernames':["bolt-worker"],
-    'builddir': "bolt-x86_64-ubuntu-shared",
-    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
-                    bolttests=False,
-                    extra_configure_args=[
-                        "-DLLVM_CCACHE_BUILD=ON",
-                        "-DLLVM_ENABLE_PROJECTS=bolt",
-                        "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
-                        "-DBUILD_SHARED_LIBS=ON",
-                        "-DLLVM_ENABLE_LLD=ON",
-                        "-DBOLT_CLANG_EXE=/usr/bin/clang-12",
-                        "-DBOLT_LLD_EXE=/usr/bin/ld.lld-12",
-                        ],
-                    )},
-
-]
+        # bolt_builder("gcc-9", "g++-9"), # default Ubuntu compiler
+        bolt_builder("gcc-10", "g++-10"),
+        #bolt_builder("gcc-11", "g++-11"),
+        bolt_builder("gcc-11", "g++-11",
+            extra=["-DLLVM_USE_LINKER=gold"],
+            extraname="gold", bolttests=True, checks=[], clang_lld=False),
+        #bolt_builder("clang-6.0", "clang++-6.0"),
+        bolt_builder("clang-7", "clang++-7"),
+        bolt_builder("clang-8", "clang++-8"),
+        bolt_builder("clang-9", "clang++-9"),
+        bolt_builder("clang-10", "clang++-10"),
+        bolt_builder("clang-11", "clang++-11"),
+        bolt_builder("clang-12", "clang++-12"),
+        bolt_builder("clang-13", "clang++-13"),
+        #bolt_builder("clang-14", "clang++-14"),
+        bolt_builder("clang-14", "clang++-14",
+            extra=["-DLLVM_USE_LINKER=mold"],
+            extraname="mold"),
+        #bolt_builder("clang-14", "clang++-14", extra=["-DLLVM_USE_LINKER=lld"], extraname="lld"),
+        bolt_builder("clang-14", "clang++-14",
+            extra=["-DLLVM_USE_LINKER=lld", "-DBUILD_SHARED_LIBS=ON"],
+            extraname="lld-shared"),
+        bolt_builder("clang-14", "clang++-14",
+            extra=["-DLLVM_USE_LINKER=lld",
+                   "-DLLVM_USE_SANITIZER=Address;Undefined"],
+            extraname="lld-asan-ubsan",
+            bolttests=True),
+        bolt_builder("clang-14", "clang++-14",
+            extra=["-DLLVM_USE_LINKER=lld",
+                   "-DLLVM_USE_SANITIZER=Memory",
+                   "-DLLVM_TABLEGEN=/data/llvm-build/bin/llvm-tblgen"],
+            extraname="lld-msan", bolttests=True),
+#        bolt_builder("clang-14", "clang++-14",
+#            extra=["-DLLVM_USE_LINKER=lld", "-DLLVM_USE_SANITIZER=Thread"],
+#            extraname="lld-tsan", bolttests=True),
+#        bolt_builder("clang-14", "clang++-14",
+#            extra=["-DLLVM_USE_LINKER=lld",
+#                   "-DLLVM_USE_SANITIZER=DataFlow",
+#                   "-DLLVM_ENABLE_LIBCXX=ON",
+#                   "-DLLVM_ENABLE_RUNTIMES=libcxx;libcxxabi"],
+#            extraname="lld-libcxx-dfsan", bolttests=True),
+#        bolt_builder("clang-14", "clang++-14",
+#            extra=["-DLLVM_USE_LINKER=lld", 
+#                   "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--push-state -Wl,-whole-archive -ljemalloc_pic -Wl,--pop-state -lpthread -lstdc++ -lm -ldl'"],
+#            extraname="lld-jemalloc", bolttests=True),
+        bolt_builder("clang-14", "clang++-14",
+            extra=["-DLLVM_USE_LINKER=lld", 
+                   "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--push-state -Wl,-whole-archive -ljemalloc_pic -Wl,--pop-state -lpthread -lstdc++ -lm -ldl'"],
+            extraname="lld-jemalloc", bolttests=True),
+        bolt_builder("clang-14", "clang++-14",
+            extra=["-DLLVM_USE_LINKER=lld", 
+                   "-DCMAKE_EXE_LINKER_FLAGS='-Wl,--push-state -Wl,-whole-archive -ltcmalloc -Wl,--pop-state -lpthread -lstdc++ -lm -ldl'"],
+            extraname="lld-tcmalloc", bolttests=True),
+        #bolt_builder("clang-14", "clang++-14", extra=["-DLLVM_USE_LINKER=lld", "-DLLVM_ENABLE_LIBCXX=ON"], extraname="lld-libcxx"),
+        {'name' : "bolt-windows",
+        'tags'  : ["bolt"],
+        'collapseRequests': True,
+        'workernames' : ["win-worker"],
+        'builddir': "bolt-x86_64-windows10-msvc",
+        'factory' : UnifiedTreeBuilder.getCmakeWithNinjaWithMSVCBuildFactory(
+                        targets = ['bolt'],
+                        checks = [],
+                        depends_on_projects=['llvm','bolt'],
+                        vs="autodetect",
+                        extra_configure_args=[
+                            "-DLLVM_ENABLE_PROJECTS=bolt",
+                            "-DLLVM_TARGETS_TO_BUILD=X86;AArch64",
+                        ])},
+      ]
