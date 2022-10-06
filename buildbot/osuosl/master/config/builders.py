@@ -2420,6 +2420,20 @@ all += [
                         ],
                     )},
 
+    {'name': "bolt-x86_64-ubuntu-clang-bolt",
+    'tags': ["bolt"],
+    'collapseRequests': False,
+    'workernames':["bolt-worker"],
+    'builddir': "bolt-x86_64-ubuntu-clang-bolt",
+    'factory' : BOLTBuilder.getBOLTCmakeBuildFactory(
+                    bolttests=False,
+                    clangbolt=True,
+                    extra_configure_args=[
+                        "-DLLVM_APPEND_VC_REV=OFF",
+                        "-DLLVM_CCACHE_BUILD=ON",
+                        ],
+                    )},
+
     {'name': "bolt-x86_64-ubuntu-dylib",
     'tags': ["bolt"],
     'collapseRequests': False,

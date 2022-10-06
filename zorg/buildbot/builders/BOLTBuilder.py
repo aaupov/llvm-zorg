@@ -6,6 +6,7 @@ from zorg.buildbot.process.factory import LLVMBuildFactory
 def getBOLTCmakeBuildFactory(
            clean = False,
            bolttests = False,
+           clangbolt = False,
            extra_configure_args = None,
            env = None,
            **kwargs):
@@ -18,12 +19,19 @@ def getBOLTCmakeBuildFactory(
     cleanBuildRequested = lambda step: clean or step.build.getProperty("clean", default=step.build.getProperty("clean_obj"))
     cleanBuildRequestedByProperty = lambda step: step.build.getProperty("clean")
 
+    targets = ['bolt']
     checks = ['check-bolt']
-    extra_steps = []
 
     f = getLLVMBuildFactoryAndSourcecodeSteps(
             depends_on_projects=['bolt', 'llvm'],
             **kwargs) # Pass through all the extra arguments.
+
+    if clangbolt:
+        targets += ['clang++-bolt']
+        checks = []
+        CmakeCommand.applyRequiredOptions(cmake_options, [
+            ("-C", "../" + src_dir + "/clang/cmake/caches/BOLT.cmake"),
+            ])
 
     if bolttests:
         checks += ['check-large-bolt']
@@ -63,7 +71,7 @@ def getBOLTCmakeBuildFactory(
 
     addNinjaSteps(
         f,
-        targets = ['bolt'],
+        targets=targets,
         checks=checks,
         env=env,
         **kwargs)
