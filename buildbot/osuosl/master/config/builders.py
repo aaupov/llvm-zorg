@@ -2519,11 +2519,10 @@ all += [
                     extra_configure_args=[
                         "-DLLVM_APPEND_VC_REV=OFF",
                         "-DLLVM_ENABLE_LLD=ON",
-                        "-DBOOTSTRAP_LLVM_ENABLE_LLD=ON",
-                        "-DBOOTSTRAP_BOOTSTRAP_LLVM_ENABLE_LLD=ON",
                         "-DLLVM_CCACHE_BUILD=ON",
-                        "-DBOOTSTRAP_LLVM_CCACHE_BUILD=ON",
+                        "-DLLVM_APPEND_VC_REV=OFF",
                         "-DPGO_INSTRUMENT_LTO=Thin",
+                        "-DCLANG_BOOTSTRAP_PASSTHROUGH=LLVM_ENABLE_LLD;LLVM_CCACHE_BUILD;LLVM_APPEND_VC_REV",
                         ],
                     )},
 
