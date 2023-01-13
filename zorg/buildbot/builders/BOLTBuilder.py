@@ -89,16 +89,12 @@ def getBOLTCmakeBuildFactory(
                 name='nfc-check-setup',
                 command=[f"../{f.monorepo_dir}/bolt/utils/nfc-check-setup.py"],
                 description=('Setup NFC testing'),
-                warnOnFailure=True,
-                haltOnFailure=False,
-                flunkOnFailure=False,
                 env=env),
             ShellCommand(
                 name='check-bolt-different',
                 command='rm -f .llvm-bolt.diff; cmp -s bin/llvm-bolt.old bin/llvm-bolt.new || touch .llvm-bolt.diff',
                 description=('Check if llvm-bolt binaries are different and '
                              'skip the following nfc-check steps'),
-                haltOnFailure=False,
                 env=env),
             LitTestCommand(
                 name='nfc-check-bolt',
@@ -111,8 +107,6 @@ def getBOLTCmakeBuildFactory(
                 description=["running", "NFC", "check-bolt"],
                 descriptionDone=["NFC", "check-bolt", "completed"],
                 warnOnFailure=True,
-                haltOnFailure=False,
-                flunkOnFailure=False,
                 doStepIf=FileExists('build/.llvm-bolt.diff'),
                 env=env),
             LitTestCommand(
@@ -122,8 +116,6 @@ def getBOLTCmakeBuildFactory(
                 description=["running", "NFC", "check-large-bolt"],
                 descriptionDone=["NFC", "check-large-bolt", "completed"],
                 warnOnFailure=True,
-                haltOnFailure=False,
-                flunkOnFailure=False,
                 doStepIf=FileExists('build/.llvm-bolt.diff'),
                 env=env),
             ])
